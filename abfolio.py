@@ -7,6 +7,7 @@ isin_history2 = []
 sum1=1
 sum2=1
 click_count = -1
+
 #********REGISTER ALL DATA IN ISIN_ARRAY**********************
 def registerData():
     global sum1
@@ -15,23 +16,22 @@ def registerData():
     global isin_history
     global isin_history2
     click_count +=1
-    if round(sum1,4)>=0:
-        if round(float(asset_perc.get()),4) >= 100:
-            print('heyyy brooooo')
+    if round(sum1,2)>0:
+        history_label = Label(root)
         quote = inv.search_quotes(text=asset_name.get().upper(),products = [asset_box.get().lower()],n_results = 1)
-        isin_history.append([quote.name,quote.symbol,quote.country,float(asset_perc.get())/100,asset_box.get().lower(),asset_name.get().upper()])
-        
-        sum1 -= (float(asset_perc.get())/100)
-        print(sum1)
+        isin_history.append([quote.name,quote.symbol,quote.country,round(float(asset_perc.get())/100,2),asset_box.get().lower(),asset_name.get().upper()])
+        sum1 -= round((float(asset_perc.get())/100),2)
+        history_label.config(text=str(round(sum1,2)))
+        history_label.place(x=16,y=100+(20*click_count))
         print(isin_history)
-    else:
-        isin_history = list(dict.fromkeys(isin_history))
         asset_perc.delete(0,'end')
         asset_box.delete(0,'end')
         asset_name.delete(0,'end')
-        quote = inv.search_quotes(text=asset_name.get().upper(),products = [asset_box.get().lower()],n_results = 1)
-        isin_history2.append([quote.name,quote.symbol,quote.country,float(asset_perc.get())/100,asset_box.get().lower(),asset_name.get().upper()])
-        sum2 -= (float(asset_perc.get())/100)
+    if round(sum2,2)>0:  
+        if len(asset_perc.get()) > 0 and len(asset_box.get()) > 0 and len(asset_name.get())>0:
+            quote = inv.search_quotes(text=asset_name.get().upper(),products = [asset_box.get().lower()],n_results = 1)
+            isin_history2.append([quote.name,quote.symbol,quote.country,float(asset_perc.get())/100,asset_box.get().lower(),asset_name.get().upper()])
+            sum2 -= round(float(asset_perc.get())/100,4)
         print(isin_history2)
 
 #******************************************************************
@@ -48,6 +48,7 @@ def backtestScreen():
     register_bttn.place(x=16,y=75)
    
 root = Tk()
+
 #**************SCREEN CONFIG****************
 #comprimento x altura
 root.geometry("900x500")
@@ -83,7 +84,6 @@ percentage.configure(text='Percentage:',bg='#1c87b7',fg='black')
 
 register_bttn = Button(root,bg='orange',width=51,height=1,fg='white',command=registerData)
 register_bttn.configure(bd=5,relief='raised',text='Click to register asset',fg='black')
-
 
 root.mainloop()
 
