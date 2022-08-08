@@ -1,211 +1,90 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns 
+from tkinter import *
+from tkinter import ttk
 import investpy as inv
-import math
-import numpy as np
-import time
-
-current_date = time.strftime("%d/%m/%Y")
-
-current_date_yf = time.strftime('%Y-%m-%d')
-
-
-sum1 = 1
-isin_history = []
-
-fetch_history = []
-
-
-def fetchData(isin_history,sum1):
-  error_arr = ['stocks','bonds','etfs','cryptos',"currencies","funds"]
-  while round(sum1,4) >= 0:
-      if sum1 > 0:
-
-        print(' ')
-        asset_cat = input('Type asset class ("stocks", "bonds",","etfs","cryptos","currencies","funds") <-> ')
-        while asset_cat not in error_arr:
-          asset_cat = input('Type asset class ("stocks", "bonds",","etfs","cryptos","currencies","funds") <-> ')
-        print(' ')
-
-        isin_code = input('Type ISIN code <-> ')
-        print(' ')
-
-        asset_weight = float(input('Asset Weight 0 to 1.0 ->'))
-        print(' ')
-
-        if asset_weight >=1:
-          asset_weight = 1
-        try:
-          quote = inv.search_quotes(text=isin_code,products = [asset_cat.lower()],n_results = 1)
-        except RuntimeError:
-          print('Error! Invalid or unavailable ISIN Code, please try again')
-        finally:
-          print("*******************************")
-          print(quote.name)
-          print(quote.exchange)
-          print(quote.country)
-          print(quote.symbol)
-          print('*******************************')
-          print("%d -> remaining portfolio alloc"%(sum1))
-
-          asset_isin = isin_code
-          isin_history.append([quote.name,quote.symbol,quote.country,asset_weight,asset_cat.lower(),asset_isin.upper()])
-          sum1 -= asset_weight 
-          print(sum1)
-      else:
-        break
-isin_array = []
-
+assets_class = ['stocks','bonds','etfs','cryptos',"currencies","funds"]
 isin_history = []
 isin_history2 = []
-sum1 = 1
-sum2 = 1
-print('PORTFOLIO 1 :')
-fetchData(isin_history,sum1)
-print('PORTFOLIO 2')
-fetchData(isin_history2,sum2)
-dfs1 = pd.DataFrame()
-dfs2 = pd.DataFrame()
-weights1 = []
-columns1 = []
-weights2 = []
-columns2 = []
-frames1 = []
-frames2 = []
-for i in range(len(isin_history)):
-  name = isin_history[i][0]
-  symbol = isin_history[i][1]
-  country = isin_history[i][2]
-  weight = isin_history[i][3]
-  cat = isin_history[i][4]
-  isin = isin_history[i][5]
-  quote = inv.search_quotes(name,products = [cat],n_results = 1)
-  df1 = quote.retrieve_historical_data('01/01/2003',current_date)
-  df1 = df1['Close']
-  columns1.append(symbol)
-  weights1.append(weight)
-  frames1.append(df1)
-dfs1 = pd.concat(frames1,axis=1)
+sum1=1
+sum2=1
+click_count = -1
+#********REGISTER ALL DATA IN ISIN_ARRAY**********************
+def registerData():
+    global sum1
+    global sum2
+    global click_count
+    global isin_history
+    global isin_history2
+    click_count +=1
+    if round(sum1,4)>=0:
+        if round(float(asset_perc.get()),4) >= 100:
+            print('heyyy brooooo')
+        quote = inv.search_quotes(text=asset_name.get().upper(),products = [asset_box.get().lower()],n_results = 1)
+        isin_history.append([quote.name,quote.symbol,quote.country,float(asset_perc.get())/100,asset_box.get().lower(),asset_name.get().upper()])
+        
+        sum1 -= (float(asset_perc.get())/100)
+        print(sum1)
+        print(isin_history)
+    else:
+        isin_history = list(dict.fromkeys(isin_history))
+        asset_perc.delete(0,'end')
+        asset_box.delete(0,'end')
+        asset_name.delete(0,'end')
+        quote = inv.search_quotes(text=asset_name.get().upper(),products = [asset_box.get().lower()],n_results = 1)
+        isin_history2.append([quote.name,quote.symbol,quote.country,float(asset_perc.get())/100,asset_box.get().lower(),asset_name.get().upper()])
+        sum2 -= (float(asset_perc.get())/100)
+        print(isin_history2)
 
-for i in range(len(isin_history2)):
-  name = isin_history2[i][0]
-  symbol = isin_history2[i][1]
-  country = isin_history2[i][2]
-  weight = isin_history2[i][3]
-  cat = isin_history2[i][4]
-  isin = isin_history2[i][5]
-  quote = inv.search_quotes(name,products = [cat],n_results = 1)
-  df2 = quote.retrieve_historical_data('01/01/2003',current_date)['Close']
-  columns2.append(symbol)
-  weights2.append(weight)
-  frames2.append(df2)
+#******************************************************************
+def backtestScreen():
+    start_bttn.place_forget()
+    title.place_forget()
+    asset_box.place(x=16,y=40)
+    asset_name.place(x=160,y=38)
+    asset_perc.place(x=310,y=38)
 
-dfs2 = pd.concat(frames2,axis=1)
-dfs1T = dfs1
-dfs2T = dfs2
-dfs1T.columns = columns1
-dfs2T.columns = columns2
+    cat_label.place(x=30,y=20)
+    ticker_label.place(x=160,y=17)
+    percentage.place(x=310,y=17) 
+    register_bttn.place(x=16,y=75)
+   
+root = Tk()
+#**************SCREEN CONFIG****************
+#comprimento x altura
+root.geometry("900x500")
+root.title("ABFolio - Market tools")
+root.configure(background='#1c87b7')
+#*************Screen change BUTTON******************
+start_bttn = Button(root,bg='#2B3E6E',width=25,height=1,fg='white',command=backtestScreen)
+start_bttn.configure(bd=5,relief='raised',text='Click to Proceed')
+start_bttn.place(x=354,y=300)
+#**********MAIN MENU TITLE********************
+title = Label(root)
+title.configure(font='Consolas 32 bold',fg="gold",bg = '#1c87b7',text='ABFolio')
+title.place(x=361,y=80)
+#***************COMBOBOX************
+asset_box = ttk.Combobox(root,values=assets_class,background='#1c87b7')
+asset_box.configure(width=11,height=8,font='Consolas 14 bold')
+#********************************
+asset_name = Entry(root)
+asset_name.config(bd=5,relief='sunken',width=14,font='Consolas 13 bold')
+#********************************
+asset_perc = Entry(root)
+asset_perc.config(bd=5,relief='sunken',width=7,font='Consolas 13 bold')
+#********************************
+cat_label = Label(root)
+cat_label.configure(text='Asset:',bg='#1c87b7',fg='black')
 
-weights_arr1 = np.array(weights1)
-weights_arr2 = np.array(weights2)
-returns1 = dfs1T.pct_change()
-returns1.dropna(inplace=True)
+ticker_label = Label(root)
+ticker_label.configure(text='Ticker/ISIN code:',bg='#1c87b7',fg='black')
 
+percentage = Label(root)
+percentage.configure(text='Percentage:',bg='#1c87b7',fg='black')
+#**************COFNIG AND DECLARE ASSET REGISTRATION BUTTON******************
 
-if len(weights1) > 1:
-  returns1['Portfolio 1'] = returns1.dot(weights_arr1)
-
-daily_ret1 = (1+returns1).cumprod()
-
-weights_arr2 = np.array(weights2)
-returns2 = dfs2T.pct_change()
-returns2.dropna(inplace=True)
-if len(weights2)>1: 
-  returns2['Portfolio 2'] = returns2.dot(weights_arr2)
-
-daily_ret2 = (1+returns2).cumprod()
-
-
-totalPlot = daily_ret1.join(daily_ret2)
-totalPlot.dropna(inplace=True)
-
-common_time = totalPlot.iloc[[0]].index.tolist()
-common_time = common_time[0]
-common_time = str(common_time)[:11]
-newtime = '%s/%s/%s'%(common_time[8:10],common_time[5:7],common_time[:4])
-sum1 = 1
-sum2 = 1
-dfs1 = pd.DataFrame()
-dfs2 = pd.DataFrame()
-weights1 = []
-columns1 = []
-weights2 = []
-columns2 = []
-frames1 = []
-frames2 = []
-for i in range(len(isin_history)):
-  print(isin_history[i])
-  name = isin_history[i][0]
-  symbol = isin_history[i][1]
-  country = isin_history[i][2]
-  weight = isin_history[i][3]
-  cat = isin_history[i][4]
-  isin = isin_history[i][5]
-  quote = inv.search_quotes(name,products = [cat],n_results = 1)
-  df1 = quote.retrieve_historical_data(newtime,current_date)['Close']
-  columns1.append(symbol)
-  weights1.append(weight)
-  frames1.append(df1)
-dfs1 = pd.concat(frames1,axis=1)
-
-for i in range(len(isin_history2)):
-  name = isin_history2[i][0]
-  symbol = isin_history2[i][1]
-  country = isin_history2[i][2]
-  weight = isin_history2[i][3]
-  cat = isin_history2[i][4]
-  isin = isin_history2[i][5]
-  quote = inv.search_quotes(name,products = [cat],n_results = 1)
-  df2 = quote.retrieve_historical_data(newtime,current_date)['Close']
-  columns2.append(symbol)
-  weights2.append(weight)
-  frames2.append(df2)
-
-dfs2 = pd.concat(frames2,axis=1)
-dfs1T = dfs1
-dfs2T = dfs2
-dfs1T.columns = columns1
-dfs2T.columns = columns2
-
-weights_arr1 = np.array(weights1)
-weights_arr2 = np.array(weights2)
-returns1 = dfs1T.pct_change()
-returns1.dropna(inplace=True)
+register_bttn = Button(root,bg='orange',width=51,height=1,fg='white',command=registerData)
+register_bttn.configure(bd=5,relief='raised',text='Click to register asset',fg='black')
 
 
-if len(weights1) > 1:
-  returns1['Portfolio 1'] = returns1.dot(weights_arr1)
-
-daily_ret1 = (1+returns1).cumprod()
-
-weights_arr2 = np.array(weights2)
-returns2 = dfs2T.pct_change()
-returns2.dropna(inplace=True)
-if len(weights2)>1: 
-  returns2['Portfolio 2'] = returns2.dot(weights_arr2)
-
-daily_ret2 = (1+returns2).cumprod()
+root.mainloop()
 
 
-totalPlot = daily_ret1.join(daily_ret2)
-totalPlot.dropna(inplace=True)
-if len(weights1) > 1:
-  totalPlot[['Portfolio 1',list(totalPlot.columns)[-1]]].plot(figsize=(10,5),fontsize=16)
-elif len(weights2) > 1:
-  totalPlot[[list(totalPlot.columns)[0],'Portfolio 2']].plot(figsize=(10,5),fontsize=16)
-else:
-  totalPlot.plot(figsize=(10,5),fontsize=16)
-plt.xlabel('Period',fontsize=20)
-plt.title('Portfolio Performance - @Antonio Brych/ABFOLIO',fontsize=16)
-plt.show()
