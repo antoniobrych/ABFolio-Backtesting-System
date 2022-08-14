@@ -31,14 +31,11 @@ def registerData():
             sum1 -= round((float(asset_perc.get())/100),4)
             individual_asset_label.config(text="%s - %s"%(quote.symbol,round(float(asset_perc.get()),4)) + '%' ,fg='black',font='Consolas 13 underline',bg="#1c87b7")
             total_sum_label.config(text=str(round(sum1,4)*100)+"% unallocated (Portfolio 1)",fg='black',font='Times 13 italic',bg="#1c87b7")
-            if 70 + (20*click_count) < 300:
-                individual_asset_label.place(x=pos_var,y=70 + (20*click_count))
-            else:
-                pos_var = pos_var + 400
-                individual_asset_label.place(x=pos_var,y=70 + (20*click_count))
-
+            if 70 + (20*click_count) > 268:
+                pos_var = pos_var + 200
             
-
+            individual_asset_label.place(x=pos_var,y=70 + (20*click_count))
+            print(pos_var)
             print(isin_history)
             asset_perc.delete(0,'end')
             asset_box.delete(0,'end')
