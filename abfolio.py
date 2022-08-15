@@ -8,19 +8,22 @@ isin_history2 = []
 sum1=1
 sum2=1
 pos_var = 425
+pos_var2 = 425
 click_count = -1
+click_count2 = -1
 #********REGISTER ALL DATA IN ISIN_ARRAY**********************
 def registerData():
     global pos_var
+    global pos_var2
     global sum1
     global sum2
     global click_count
+    global click_count2
     global isin_history
     global isin_history2
-    if len(asset_perc.get()) > 0 and len(asset_box.get()) > 0 and len(asset_name.get())>0:
-        click_count +=1
-        if click_count > 10:
-            click_count = 1 
+    click_count +=1
+    if click_count > 10:
+        click_count = 1 
 
     if round(sum1,4)>0:
         if len(asset_perc.get()) > 0 and len(asset_box.get()) > 0 and len(asset_name.get())>0:
@@ -41,16 +44,29 @@ def registerData():
             asset_box.delete(0,'end')
             asset_name.delete(0,'end')
     elif round(sum2,4)>0:
+        click_count2 += 1
+        #tava 5 antes de eu mexer em baixo
+        if click_count2 > 7:
+            click_count2 = 0
+        individual_asset_label2 = Label(root)
+        individual_asset_label2.config(text='ITSA 10.00')
+        if 330 + (25*click_count2) > 500:
+            pos_var2 = pos_var2 + 100
+        
+        individual_asset_label2.place(x=pos_var2,y=330+(25*click_count2))
         register_bttn.configure(bd=5,relief='raised',text='Click to register asset in "Portfolio 2"',fg='black')
         if len(asset_perc.get()) > 0 and len(asset_box.get()) > 0 and len(asset_name.get())>0:
             quote = inv.search_quotes(text=asset_name.get().upper(),products = [asset_box.get().lower()],n_results = 1)
             isin_history2.append([quote.name,quote.symbol,quote.country,round(float(asset_perc.get())/100,4),asset_box.get().lower(),asset_name.get().upper()])
             sum2 -= round(float(asset_perc.get())/100,4)
+            individual_asset_label2.config(text="%s - %s"%(quote.symbol,round(float(asset_perc.get()),4)) + '%' ,fg='black',font='Consolas 13 underline',bg="#1c87b7")
             total_sum_label.config(text=str(round(sum2,4)*100)+"% unallocated (Portfolio 2)",fg='black',font='Times 13 italic',bg="#1c87b7")
+            
+            
             asset_perc.delete(0,'end')
             asset_box.delete(0,'end')
             asset_name.delete(0,'end')
-        print(isin_history2)
+        print(330 + (25*click_count2))
     
     else:
         register_bttn.place_forget()
@@ -65,9 +81,14 @@ def registerData():
 
     if round(sum1,4) == 0:
         p1_area_label.configure(text= 'Portfolio 1:',font='Consolas 16 bold',bg='#1c87b7',fg='black')
+        click_count = 0
+        pos_var = 0
         total_sum_label.config(text=str(round(sum2,4)*100)+"% unallocated (Portfolio 2)",fg='black',font='Times 13 italic',bg="#1c87b7")
         p2_area_label.configure(text= 'Portfolio 2:',font='Consolas 16 bold',bg='#1c87b7',fg="#c50017")
         register_bttn.configure(bd=5,relief='raised',text='Click to register asset in "Portfolio 2"',fg='black')
+        print(click_count2)
+        print(pos_var2)
+        
     
     
 
